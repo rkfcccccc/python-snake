@@ -5,7 +5,7 @@ control_keys = {}
 remains = {}
 
 remains_mode = True
-remains_lifetime = 50
+remains_lifetime = 100
 
 apples = []
 apples_count = 5
@@ -159,7 +159,7 @@ def create_snake(cell_x, cell_y, direction, length, speed, color, controls=None)
     return s
 
 
-create_snake(16, 16, 'up', 4, 10, (109, 127, 242), {
+create_snake(16, 11, 'up', 8, 10, (109, 127, 242), {
     273: 'up',
     274: 'down',
     276: 'left',
@@ -167,6 +167,13 @@ create_snake(16, 16, 'up', 4, 10, (109, 127, 242), {
 })
 
 create_snake(19, 17, 'up', 4, 15, (242, 62, 109))
+
+create_snake(21, 17, 'up', 4, 15, (242, 62, 109))
+
+create_snake(23, 17, 'up', 4, 15, (242, 62, 109))
+
+create_snake(25, 17, 'up', 4, 15, (242, 62, 109))
+
 
 for i in range(apples_count):
     apples.append(Apple())
@@ -256,10 +263,10 @@ while running:
     for i in range(len(snakes)):
         x, y = screen_width - screen_indent - w, screen_indent - border_size + (h + 10) * i
         pygame.draw.rect(game_display, (i == 0 and tuple(i * 0.8 for i in snakes[i].color) or s.color), (x, y, w, h))
-        pygame.draw.rect(game_display, snakes[i].color, (x + 1, y + 1, w - 2, h - 2))
+        pygame.draw.rect(game_display, snakes[i].color, (x + 2, y + 2, w - 4, h - 4))
 
         font = pygame.font.SysFont('bitstreamverasans', 32)
-        text = font.render((not snakes[i].alive and 'Died - ' or '') + 'Score: ' + str(snakes[i].score), True, (255, 255, 255))
+        text = font.render((not snakes[i].alive and 'Died - ' or '') + 'Length: ' + str(snakes[i].length), True, (255, 255, 255))
 
         game_display.blit(text, (x + (w - text.get_width()) / 2, y + (h - text.get_height()) / 2))
 
