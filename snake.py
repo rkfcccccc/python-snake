@@ -11,6 +11,12 @@ apples = []
 apples_count = 5
 score_per_apple = 15
 
+opposite_directions = {
+    'up': 'down', 
+    'down': 'up',
+    'left': 'right',
+    'right': 'left'
+}
 ###
 
 pygame.init()
@@ -159,21 +165,27 @@ def create_snake(cell_x, cell_y, direction, length, speed, color, controls=None)
     return s
 
 
-create_snake(16, 11, 'up', 8, 10, (109, 127, 242), {
+create_snake(16, 16, 'up', 4, 7, (109, 127, 242), {
     273: 'up',
     274: 'down',
     276: 'left',
     275: 'right'
 })
 
-create_snake(19, 17, 'up', 4, 15, (242, 62, 109))
-
+create_snake(10, 16, 'up', 4, 7, (62, 242, 109), {
+    119: 'up',
+    97: 'left',
+    115: 'down',
+    100: 'right'
+})
+"""
 create_snake(21, 17, 'up', 4, 15, (242, 62, 109))
 
 create_snake(23, 17, 'up', 4, 15, (242, 62, 109))
 
 create_snake(25, 17, 'up', 4, 15, (242, 62, 109))
 
+"""
 
 for i in range(apples_count):
     apples.append(Apple())
@@ -181,94 +193,99 @@ for i in range(apples_count):
 ###
 
 running = True
-while running:
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT or event.type == 3 and event.key == 27:
-            running = False
-
-        if event.type == 3:
-            if event.key == 13:
-                snakes[0].alive = False
-
-            if control_keys.get(event.key):
-                control = control_keys[event.key]
-
-                snakes[control[1]].set_direction(control[0])
-
-        print(event)
-
-    game_display.fill((255, 255, 255))
-
-    time = pygame.time.get_ticks()
-
-    for a in apples:
-        x, y = cell2xy(a.cell)
-        color = (188, 88, 14)
-
-        pygame.draw.rect(game_display, color, (x, y, CELL_SIZE, CELL_SIZE))
-
-        a.check()
-
-    for s in snakes:
-        if not s.alive:
-            continue
-
-        if time - s.last_move > s.speed * 20:
-            if not is_wall(s.next_cell()):
-                s.move()
-            else:
-                s.die()
-                continue
-
-        for i in range(len(s.tail)):
-            part = s.tail[i]
-            x, y = cell2xy((part[0], part[1]))
-            color = (i == 0 and tuple(i * 0.5 for i in s.color) or s.color)
-
+try:
+    while running:
+    
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT or event.type == 3 and event.key == 27:
+                running = False
+    
+            if event.type == 3:
+                if event.key == 13:
+                    snakes[0].alive = False
+    
+                if control_keys.get(event.key):
+                    control = control_keys[event.key]
+                    
+                    if opposite_directions[snakes[control[1]].direction] != control[0]:
+                        snakes[control[1]].set_direction(control[0])
+    
+            print(event)
+    
+        game_display.fill((255, 255, 255))
+    
+        time = pygame.time.get_ticks()
+    
+        for a in apples:
+            x, y = cell2xy(a.cell)
+            color = (188, 88, 14)
+    
             pygame.draw.rect(game_display, color, (x, y, CELL_SIZE, CELL_SIZE))
-
-    for k, v in remains.items():
-        if v is None:
-            continue
-
-        percent = v[0] / (v[1] == -1 and v[0] or v[1])
-        size = CELL_SIZE * percent
-        x, y = tuple(i + (CELL_SIZE - size) / 2 for i in cell2xy(k))
-        remains[k][0] -= 10
-
-        if percent <= 0.5:
-            remains[k] = None
-
-        pygame.draw.rect(game_display, (150, 150, 150), (x, y, size, size))
-
-    # Borders #
-
-    pygame.draw.rect(game_display, (220, 220, 220),
-                     (screen_indent, screen_indent - border_size, CELL_SIZE * SIZE_H, border_size))
-    pygame.draw.rect(game_display, (220, 220, 220),
-                     (screen_indent, screen_indent + CELL_SIZE * SIZE_H, CELL_SIZE * SIZE_H, border_size))
-    pygame.draw.rect(game_display, (220, 220, 220),
-                     (screen_indent - border_size, screen_indent - border_size, border_size, CELL_SIZE * SIZE_H + border_size * 2))
-    pygame.draw.rect(game_display, (220, 220, 220),
-                     (screen_indent + CELL_SIZE * SIZE_W, screen_indent - border_size, border_size, CELL_SIZE * SIZE_H + border_size * 2))
-
-    for x in range(1, SIZE_W):
-        pygame.draw.rect(game_display, (230, 230, 230), (screen_indent + CELL_SIZE * x, screen_indent, 1, CELL_SIZE * SIZE_H))
-
-    for y in range(1, SIZE_H):
-        pygame.draw.rect(game_display, (230, 230, 230), (screen_indent, screen_indent + CELL_SIZE * y, CELL_SIZE * SIZE_W, 1))
-
-    w, h = screen_width - (screen_width / 1.25), screen_height - (screen_height / 1.1)
-    for i in range(len(snakes)):
-        x, y = screen_width - screen_indent - w, screen_indent - border_size + (h + 10) * i
-        pygame.draw.rect(game_display, (i == 0 and tuple(i * 0.8 for i in snakes[i].color) or s.color), (x, y, w, h))
-        pygame.draw.rect(game_display, snakes[i].color, (x + 2, y + 2, w - 4, h - 4))
-
-        font = pygame.font.SysFont('bitstreamverasans', 32)
-        text = font.render((not snakes[i].alive and 'Died - ' or '') + 'Length: ' + str(snakes[i].length), True, (255, 255, 255))
-
-        game_display.blit(text, (x + (w - text.get_width()) / 2, y + (h - text.get_height()) / 2))
-
-    pygame.display.update()
-    clock.tick(60)
+    
+            a.check()
+    
+        for s in snakes:
+            if not s.alive:
+                continue
+    
+            if time - s.last_move > s.speed * 20:
+                if not is_wall(s.next_cell()):
+                    s.move()
+                else:
+                    s.die()
+                    continue
+    
+            for i in range(len(s.tail)):
+                part = s.tail[i]
+                x, y = cell2xy((part[0], part[1]))
+                color = (i == 0 and tuple(i * 0.5 for i in s.color) or s.color)
+    
+                pygame.draw.rect(game_display, color, (x, y, CELL_SIZE, CELL_SIZE))
+    
+        for k, v in remains.items():
+            if v is None:
+                continue
+    
+            percent = v[0] / (v[1] == -1 and v[0] or v[1])
+            size = CELL_SIZE * percent
+            x, y = tuple(i + (CELL_SIZE - size) / 2 for i in cell2xy(k))
+            remains[k][0] -= 10
+    
+            if percent <= 0.5:
+                remains[k] = None
+    
+            pygame.draw.rect(game_display, (150, 150, 150), (x, y, size, size))
+    
+        # Borders #
+    
+        pygame.draw.rect(game_display, (220, 220, 220),
+                         (screen_indent, screen_indent - border_size, CELL_SIZE * SIZE_H, border_size))
+        pygame.draw.rect(game_display, (220, 220, 220),
+                         (screen_indent, screen_indent + CELL_SIZE * SIZE_H, CELL_SIZE * SIZE_H, border_size))
+        pygame.draw.rect(game_display, (220, 220, 220),
+                         (screen_indent - border_size, screen_indent - border_size, border_size, CELL_SIZE * SIZE_H + border_size * 2))
+        pygame.draw.rect(game_display, (220, 220, 220),
+                         (screen_indent + CELL_SIZE * SIZE_W, screen_indent - border_size, border_size, CELL_SIZE * SIZE_H + border_size * 2))
+    
+        for x in range(1, SIZE_W):
+            pygame.draw.rect(game_display, (230, 230, 230), (screen_indent + CELL_SIZE * x, screen_indent, 1, CELL_SIZE * SIZE_H))
+    
+        for y in range(1, SIZE_H):
+            pygame.draw.rect(game_display, (230, 230, 230), (screen_indent, screen_indent + CELL_SIZE * y, CELL_SIZE * SIZE_W, 1))
+    
+        w, h = screen_width - (screen_width / 1.25), screen_height - (screen_height / 1.1)
+        for i in range(len(snakes)):
+            x, y = screen_width - screen_indent - w, screen_indent - border_size + (h + 10) * i
+            pygame.draw.rect(game_display, (i == 0 and tuple(i * 0.8 for i in snakes[i].color) or s.color), (x, y, w, h))
+            pygame.draw.rect(game_display, snakes[i].color, (x + 2, y + 2, w - 4, h - 4))
+    
+            font = pygame.font.SysFont('bitstreamverasans', 32)
+            text = font.render((not snakes[i].alive and 'Died - ' or '') + 'Length: ' + str(snakes[i].length), True, (255, 255, 255))
+    
+            game_display.blit(text, (x + (w - text.get_width()) / 2, y + (h - text.get_height()) / 2))
+    
+        pygame.display.update()
+        clock.tick(60)
+    pygame.quit()
+except SystemExit:
+    pygame.quit()
