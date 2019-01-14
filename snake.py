@@ -30,7 +30,7 @@ screen_height = display_info.current_h
 
 screen_indent = screen_width - (screen_width / 1.1)
 
-SIZE_W, SIZE_H = 32, 32
+SIZE_W, SIZE_H = 8, 8
 CELL_SIZE = (screen_height - screen_indent * 2) / SIZE_H
 
 border_size = 10
@@ -165,20 +165,20 @@ def create_snake(cell_x, cell_y, direction, length, speed, color, controls=None)
     return s
 
 
-create_snake(16, 16, 'up', 4, 7, (109, 127, 242), {
+create_snake(1, 1, 'down', 1, 30, (109, 127, 242), {
     273: 'up',
     274: 'down',
     276: 'left',
     275: 'right'
 })
-
-create_snake(10, 16, 'up', 4, 7, (62, 242, 109), {
+"""
+create_snake(5, 5, 'down', 4, 30, (62, 242, 109), {
     119: 'up',
     97: 'left',
     115: 'down',
     100: 'right'
 })
-"""
+
 create_snake(21, 17, 'up', 4, 15, (242, 62, 109))
 
 create_snake(23, 17, 'up', 4, 15, (242, 62, 109))
