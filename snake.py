@@ -7,6 +7,9 @@ remains = {}
 remains_mode = True
 remains_lifetime = 100
 
+teleport_walls = True
+
+
 apples = []
 apples_count = 5
 score_per_apple = 15
@@ -30,7 +33,7 @@ screen_height = display_info.current_h
 
 screen_indent = screen_width - (screen_width / 1.1)
 
-SIZE_W, SIZE_H = 8, 8
+SIZE_W, SIZE_H = 24, 24
 CELL_SIZE = (screen_height - screen_indent * 2) / SIZE_H
 
 border_size = 10
@@ -128,7 +131,7 @@ def dir2xy(direction):
 
 
 def cell2xy(cell):
-    return min(screen_indent + cell[0] * CELL_SIZE, screen_indent + (SIZE_W - 1) * CELL_SIZE), min(screen_indent + cell[1] * CELL_SIZE, screen_indent + (SIZE_H - 1) * CELL_SIZE)
+    return screen_indent + cell[0] * CELL_SIZE, screen_indent + cell[1] * CELL_SIZE
 
 
 def is_wall(cell):
@@ -165,20 +168,37 @@ def create_snake(cell_x, cell_y, direction, length, speed, color, controls=None)
     return s
 
 
-create_snake(1, 1, 'down', 1, 30, (109, 127, 242), {
+create_snake(1, 1, 'down', 2, 10, (109, 127, 242), {
     273: 'up',
     274: 'down',
     276: 'left',
     275: 'right'
 })
-"""
-create_snake(5, 5, 'down', 4, 30, (62, 242, 109), {
+
+create_snake(5, 1, 'down', 2, 10, (62, 242, 109), {
     119: 'up',
     97: 'left',
     115: 'down',
     100: 'right'
 })
 
+create_snake(10, 1, 'down', 2, 10, (242, 62, 109), {
+    264: 'up',
+    260: 'left',
+    261: 'down',
+    262: 'right'
+})
+
+create_snake(15, 1, 'down', 2, 10, (242, 62, 242), {
+    111: 'up',
+    107: 'left',
+    108: 'down',
+    59: 'right'
+})
+
+
+
+"""
 create_snake(21, 17, 'up', 4, 15, (242, 62, 109))
 
 create_snake(23, 17, 'up', 4, 15, (242, 62, 109))
@@ -191,11 +211,10 @@ for i in range(apples_count):
     apples.append(Apple())
 
 ###
-
+_key = 0
 running = True
 try:
     while running:
-    
         for event in pygame.event.get():
             if event.type == pygame.QUIT or event.type == 3 and event.key == 27:
                 running = False
@@ -203,7 +222,7 @@ try:
             if event.type == 3:
                 if event.key == 13:
                     snakes[0].alive = False
-    
+                _key = event.key
                 if control_keys.get(event.key):
                     control = control_keys[event.key]
                     
@@ -274,12 +293,17 @@ try:
             pygame.draw.rect(game_display, (230, 230, 230), (screen_indent, screen_indent + CELL_SIZE * y, CELL_SIZE * SIZE_W, 1))
     
         w, h = screen_width - (screen_width / 1.25), screen_height - (screen_height / 1.1)
+        
+        font = pygame.font.SysFont('bitstreamverasans', 16)
+        text = font.render('Key: ' + str(_key), True, (0, 0, 0))
+        game_display.blit(text, (10, 10))
+        
+        font = pygame.font.SysFont('bitstreamverasans', 32)
         for i in range(len(snakes)):
             x, y = screen_width - screen_indent - w, screen_indent - border_size + (h + 10) * i
             pygame.draw.rect(game_display, (i == 0 and tuple(i * 0.8 for i in snakes[i].color) or s.color), (x, y, w, h))
             pygame.draw.rect(game_display, snakes[i].color, (x + 2, y + 2, w - 4, h - 4))
     
-            font = pygame.font.SysFont('bitstreamverasans', 32)
             text = font.render((not snakes[i].alive and 'Died - ' or '') + 'Length: ' + str(snakes[i].length), True, (255, 255, 255))
     
             game_display.blit(text, (x + (w - text.get_width()) / 2, y + (h - text.get_height()) / 2))
